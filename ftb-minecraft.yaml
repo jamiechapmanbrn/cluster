@@ -1,0 +1,165 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: washing-wasp-minecraft
+    chart: minecraft-1.1.0
+    heritage: Tiller
+    release: washing-wasp
+  name: washing-wasp-minecraft
+  namespace: default
+spec:
+  progressDeadlineSeconds: 2147483647
+  replicas: 1
+  revisionHistoryLimit: 2147483647
+  selector:
+    matchLabels:
+      app: washing-wasp-minecraft
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: washing-wasp-minecraft
+    spec:
+      containers:
+      - env:
+        - name: EULA
+          value: "TRUE"
+        - name: TYPE
+          value: FTB
+        - name: FTB_SERVER_MOD
+          value: FTBUltimateReloadedServer_1.7.1.zip
+        - name: FTB_LEGACYJAVAFIXER
+          value: "false"
+        - name: VERSION
+          value: 1.12.2
+        - name: DIFFICULTY
+          value: normal
+        - name: WHITELIST
+        - name: OPS
+          value: jamie_1318
+        - name: ICON
+        - name: MAX_PLAYERS
+          value: "20"
+        - name: MAX_WORLD_SIZE
+          value: "10000"
+        - name: ALLOW_NETHER
+          value: "true"
+        - name: ANNOUNCE_PLAYER_ACHIEVEMENTS
+          value: "true"
+        - name: ENABLE_COMMAND_BLOCK
+          value: "true"
+        - name: FORCE_gameMode
+          value: "false"
+        - name: GENERATE_STRUCTURES
+          value: "true"
+        - name: HARDCORE
+          value: "false"
+        - name: MAX_BUILD_HEIGHT
+          value: "256"
+        - name: MAX_TICK_TIME
+          value: "60000"
+        - name: SPAWN_ANIMALS
+          value: "true"
+        - name: SPAWN_MONSTERS
+          value: "true"
+        - name: SPAWN_NPCS
+          value: "true"
+        - name: VIEW_DISTANCE
+          value: "10"
+        - name: SEED
+        - name: MODE
+          value: survival
+        - name: MOTD
+          value: Welcome to Jamie's Minecraft on Kubernetes!
+        - name: PVP
+          value: "false"
+        - name: LEVEL_TYPE
+          value: DEFAULT
+        - name: GENERATOR_SETTINGS
+        - name: LEVEL
+          value: world
+        - name: ONLINE_MODE
+          value: "true"
+        - name: MEMORY
+          value: 8096M
+        - name: JVM_OPTS
+        - name: JVM_XX_OPTS
+        image: itzg/minecraft-server:latest
+        imagePullPolicy: Always
+        name: washing-wasp-minecraft
+        ports:
+        - containerPort: 25565
+          hostPort: 25565
+          name: minecraft
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            - mcstatus
+            - localhost:25565
+            - status
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          requests:
+            cpu: "1"
+            memory: 8096Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /data
+          name: datadir
+        - mountPath: /backup
+          name: mnt
+          subPath: "Files/backup/ftb-minecraft"
+      dnsConfig:
+        options:
+        - name: ndots
+          value: "1"
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 2000
+        runAsUser: 1000
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: washing-wasp-minecraft-datadir
+      - name: mnt
+        nfs: 
+          path: /mnt
+          server: xentor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: washing-wasp-minecraft
+    chart: minecraft-1.1.0
+    heritage: Tiller
+    release: washing-wasp
+  name: washing-wasp-minecraft
+  namespace: default
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - name: minecraft
+    nodePort: 30895
+    port: 25565
+    protocol: TCP
+    targetPort: minecraft
+  selector:
+    app: washing-wasp-minecraft
+  sessionAffinity: None
+  type: LoadBalancer

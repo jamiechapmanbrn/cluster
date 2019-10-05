@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: plex-migration
+spec:
+  template:
+    spec:
+      nodeName: sunfire
+      containers:
+      - image: eeacms/rsync
+        command:
+          - rsync
+          - -avxHAX 
+          - --progress
+          -  /old/default-plex-config-pvc-aad547f4-f6ca-11e8-9125-00144fe7563a/
+          - /new/
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - mountPath: /new
+            name: datadir
+          - mountPath: /old
+            name: mnt
+        name: rsync
+      volumes:
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: plex-config
+      - name: mnt
+        nfs: 
+          path: /mnt/ssd
+          server: sunfire
+      restartPolicy: Never
+  backoffLimit: 4

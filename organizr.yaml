@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: organizr-deployment
+  labels:
+    app: organizr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: organizr
+  template:
+    metadata:
+      labels:
+        app: organizr
+    spec:
+      containers:
+      - name: organizr
+        image: organizrtools/organizr-v2
+        ports:
+        - containerPort: 80
+        env:
+        - name: PGID
+          value: "1000"
+        - name: PUID
+          value: "1000"
+        volumeMounts:
+        - mountPath: /config
+          name: config
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: organizr-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: organizr
+  labels:
+    app: organizr
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: organizr
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: organizr-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx-internal
+spec:
+  rules:
+  - host: organizr.here
+    http:
+      paths:
+        - backend:
+            serviceName: organizr
+            servicePort: 80
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: organizr-ingress-jamiechapmanbrn
+  annotations:
+    kubernetes.io/ingress.class: nginx-prod
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod-jamiechapmanbrn
+    certmanager.k8s.io/acme-challenge-type: dns01
+    certmanager.k8s.io/acme-dns01-provider: cf-dns
+    kubernetes.io/tls-acme: “true”
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  rules:
+  - host: organizr.jamiechapmanbrn.com
+    http:
+      paths:
+        - backend:
+            serviceName: organizr
+            servicePort: 80
+  tls:
+  - secretName: letsencrypt-sec-prod-organizr-jamiechapmanbrn
+    hosts:
+    - "organizr.jamiechapmanbrn.com"

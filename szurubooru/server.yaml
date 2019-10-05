@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: szurubooru-server
+  labels:
+    app: szurubooru
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: szurubooru
+      component: server
+  template:
+    metadata:
+      labels:
+        app: szurubooru
+        component: server
+    spec:
+      containers:
+      - name: server
+        image: harbor.jamiechapmanbrn.com/szurubooru/server
+        ports:
+        - containerPort: 6666
+          name: service
+        env:
+        - name: POSTGRES_HOST
+          value: "postegre-postgresql"
+          
+        - name: ESEARCH_HOST
+          value: "elasticstack-elasticsearch-client"
+          
+        - name: POSTGRES_USER
+          value: "postgres"
+          
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postegre-postgresql
+              key: postgresql-password
+        - name: DATA_PATH
+          value: "/data/"
+        - name: CONFIG_PATH
+          value: "/config/"
+          
+        volumeMounts:
+        - mountPath: /data
+          name: data
+        - mountPath: /config
+          name: config
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: szurubooru-data
+      - name: config
+        nfs:
+          path: /mnt/Files/config_dirs/szurubooru
+          server: xentor

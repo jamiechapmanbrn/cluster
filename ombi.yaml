@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ombi-deployment
+  labels:
+    app: ombi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ombi
+  template:
+    metadata:
+      labels:
+        app: ombi
+    spec:
+      containers:
+      - name: ombi
+        image: linuxserver/ombi
+        ports:
+        - containerPort: 3579
+        env:
+        - name: PGID
+          value: "1000"
+        - name: PUID
+          value: "1000"
+        - name: TZ
+          value: "America/Toronto"
+        volumeMounts:
+        - mountPath: /mnt
+          name: mnt
+        - mountPath: /etc/localtime
+          name: localtime
+        - mountPath: /config
+          name: config
+      volumes:
+      - name: localtime
+        hostPath: 
+          path: /etc/localtime
+      - name: mnt
+        nfs: 
+          path: /mnt
+          server: xentor
+      - name: config
+        persistentVolumeClaim:
+          claimName: ombi-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ombi
+  labels:
+    app: ombi
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3579
+    protocol: TCP
+  selector:
+    app: ombi
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ombi-ingress-jamiechapmanbrn
+  annotations:
+    kubernetes.io/ingress.class: nginx-prod
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod-jamiechapmanbrn
+    certmanager.k8s.io/acme-challenge-type: dns01
+    certmanager.k8s.io/acme-dns01-provider: cf-dns
+    kubernetes.io/tls-acme: “true”
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  rules:
+  - host: ombi.jamiechapmanbrn.com
+    http:
+      paths:
+        - backend:
+            serviceName: ombi
+            servicePort: 3579
+  tls:
+  - secretName: letsencrypt-sec-prod-ombi-jamiechapmanbrn
+    hosts:
+    - "ombi.jamiechapmanbrn.com"

@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medusa-deployment
+  labels:
+    app: medusa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: medusa
+  template:
+    metadata:
+      labels:
+        app: medusa
+    spec:
+      containers:
+      - name: medusa
+        image: linuxserver/medusa
+        ports:
+        - containerPort: 8081
+        env:
+        - name: GID
+          value: "1000"
+        - name: UID
+          value: "1000"
+        - name: TZ
+          value: "America/Toronto"
+        volumeMounts:
+        - mountPath: /mnt
+          name: mnt
+        - mountPath: /config
+          name: config
+      volumes:
+      - name: mnt
+        nfs: 
+          path: /mnt
+          server: xentor
+      - name: config
+        persistentVolumeClaim:
+          claimName: medusa-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: medusa
+  labels:
+    app: medusa
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8081
+    protocol: TCP
+  selector:
+    app: medusa
+       
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: medusa-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx-internal
+spec:
+  rules:
+  - host: medusa.here
+    http:
+      paths:
+        - backend:
+            serviceName: medusa
+            servicePort: 8081
+    
+    

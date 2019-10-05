@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: szurubooru-server
+  labels:
+    app: szurubooru
+    component: server
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6666
+    protocol: TCP
+  selector:
+    app: szurubooru
+    component: server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: szurubooru-client
+  labels:
+    app: szurubooru
+    component: client
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: szurubooru
+    component: client

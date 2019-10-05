@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lidarr-deployment
+  labels:
+    app: lidarr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lidarr
+  template:
+    metadata:
+      labels:
+        app: lidarr
+    spec:
+      containers:
+      - name: lidarr
+        image: linuxserver/lidarr
+        ports:
+        - containerPort: 8686
+        env:
+        - name: PGID
+          value: "1000"
+        - name: PUID
+          value: "1000"
+        - name: TZ
+          value: "America/Toronto"
+        volumeMounts:
+        - mountPath: /mnt
+          name: mnt
+        - mountPath: /etc/localtime
+          name: localtime
+        - mountPath: /config
+          name: config
+      volumes:
+      - name: localtime
+        hostPath: 
+          path: /etc/localtime
+      - name: mnt
+        nfs: 
+          path: /mnt/
+          server: xentor
+      - name: config
+        persistentVolumeClaim:
+          claimName: lidarr-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lidarr
+  labels:
+    app: lidarr
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8686
+    protocol: TCP
+  selector:
+    app: lidarr
+       
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: lidarr-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx-internal
+spec:
+  rules:
+  - host: lidarr.here
+    http:
+      paths:
+        - backend:
+            serviceName: lidarr
+            servicePort: 8686
+    
+    

@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jackett-deployment
+  labels:
+    app: jackett
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jackett
+  template:
+    metadata:
+      labels:
+        app: jackett
+    spec:
+      containers:
+      - name: jackett
+        image: linuxserver/jackett
+        ports:
+        - containerPort: 9117
+        env:
+        - name: PGID
+          value: "1000"
+        - name: PUID
+          value: "1000"
+        - name: TZ
+          value: "America/Toronto"
+        volumeMounts:
+        - mountPath: /mnt
+          name: mnt
+        - mountPath: /etc/localtime
+          name: localtime
+        - mountPath: /config
+          name: config
+      volumes:
+      - name: localtime
+        hostPath: 
+          path: /etc/localtime
+      - name: mnt
+        nfs: 
+          path: /mnt
+          server: xentor
+      - name: config
+        persistentVolumeClaim:
+          claimName: jackett-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jackett
+  labels:
+    app: jackett
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9117
+    protocol: TCP
+  selector:
+    app: jackett
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jackett-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx-internal
+spec:
+  rules:
+  - host: jackett.here
+    http:
+      paths:
+        - backend:
+            serviceName: jackett
+            servicePort: 9117
+       

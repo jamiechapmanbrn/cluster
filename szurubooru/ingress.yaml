@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: szurubooru
+  annotations:
+    kubernetes.io/ingress.class: nginx-internal
+spec:
+  rules:
+  - host: szurubooru.local
+    http:
+      paths:
+        - backend:
+            serviceName: szurubooru-client
+            servicePort: 80

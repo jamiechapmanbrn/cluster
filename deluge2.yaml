@@ -1,0 +1,80 @@
+# This is just for hosting touhou lossless music collection because it slows deluge down to a crawl.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deluge-tlmc
+  labels:
+    app: deluge-tlmc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deluge-tlmc
+  template:
+    metadata:
+      labels:
+        app: deluge-tlmc
+    spec:
+      hostNetwork: true
+      containers:
+      - name: deluge
+        image: linuxserver/deluge
+        ports:
+        - containerPort: 8112
+          name: webold
+        - containerPort: 58846
+          name: client
+        env:
+        - name: PGID
+          value: "1000"
+        - name: PUID
+          value: "1000"
+        - name: TZ
+          value: "America/Toronto"
+        volumeMounts:
+        - mountPath: /mnt
+          name: mnt
+        - mountPath: /config
+          name: config
+      volumes:
+      - name: mnt
+        nfs: 
+          path: /mnt
+          server: xentor
+      - name: config
+        persistentVolumeClaim:
+          claimName: deluge2-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deluge-tlmc
+  labels:
+    app: deluge-tlmc
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8112
+    protocol: TCP
+    name: webold
+  - port: 58846
+    protocol: TCP
+    name: client
+  selector:
+    app: deluge-tlmc
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: deluge-tlmc-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx-internal
+spec:
+  rules:
+  - host: deluge-tlmc.here
+    http:
+      paths:
+        - backend:
+            serviceName: deluge-tlmc
+            servicePort: 8112
+       

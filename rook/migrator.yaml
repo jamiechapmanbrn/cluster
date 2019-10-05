@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: xentor-migration
+spec:
+  template:
+    spec:
+      nodeName: xentor
+      containers:
+      - image: eeacms/rsync
+        command:
+          - rsync
+          - -avxHAX 
+          - --progress
+          - /old/
+          - /new/
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - mountPath: /new
+            name: datadir
+          - mountPath: /old
+            name: mnt
+        name: rsync
+      volumes:
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: cephfs-pvc
+      - name: mnt
+        nfs: 
+          path: /mnt
+          server: xentor
+      restartPolicy: Never
+  backoffLimit: 4

@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ubooquity-deployment
+  labels:
+    app: ubooquity
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ubooquity
+  template:
+    metadata:
+      labels:
+        app: ubooquity
+    spec:
+      containers:
+      - name: ubooquity
+        image: linuxserver/ubooquity
+        env:
+        - name: PGID
+          value: "1000"
+        - name: PUID
+          value: "1000"
+        - name: MAXMEM
+          value: "1024"
+        ports:
+        - containerPort: 2202
+          name: web
+        - containerPort: 2203
+          name: admin
+        volumeMounts:
+        - mountPath: /mnt
+          name: mnt
+        - mountPath: /config
+          name: config
+      volumes:
+      - name: mnt
+        nfs: 
+          path: /mnt/
+          server: xentor
+      - name: config
+        persistentVolumeClaim:
+          claimName: ubooquity-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ubooquity
+  labels:
+    app: ubooquity
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 2202
+    protocol: TCP
+    name: web
+  - port: 2203
+    protocol: TCP
+    name: admin
+  selector:
+    app: ubooquity
+       
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ubooquity-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx-internal
+    nginx.ingress.kubernetes.io/app-root: "/ubooquity"
+spec:
+  rules:
+  - host: ubooquity.here
+    http:
+      paths:
+        - backend:
+            serviceName: ubooquity
+            servicePort: 2202  
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ubooquity-ingress-admin
+  annotations:
+    kubernetes.io/ingress.class: nginx-internal
+    nginx.ingress.kubernetes.io/app-root: "/ubooquity/admin"
+    
+spec:
+  rules:
+  - host: ubooquity.admin.here
+    http:
+      paths:
+        - backend:
+            serviceName: ubooquity
+            servicePort: 2203
+            

@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: szurubooru-client
+  labels:
+    app: szurubooru
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: szurubooru
+      component: client
+  template:
+    metadata:
+      labels:
+        app: szurubooru
+        component: client
+    spec:
+      containers:
+      - name: server
+        image: harbor.jamiechapmanbrn.com/szurubooru/client
+        ports:
+        - containerPort: 80
+          name: service
+        env:
+        - name: BACKEND_HOST
+          value: "szurubooru-server"
+          
+        volumeMounts:
+        - mountPath: /data
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: szurubooru-data

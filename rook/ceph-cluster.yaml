@@ -1,0 +1,55 @@
+#################################################################################################################
+# Define the settings for the rook-ceph cluster with settings that should only be used in a test environment.
+# A single filestore OSD will be created in the dataDirHostPath.
+# For example, to create the cluster:
+#   kubectl create -f common.yaml
+#   kubectl create -f operator.yaml
+#   kubectl create -f cluster-test.yaml
+#################################################################################################################
+
+apiVersion: ceph.rook.io/v1
+kind: CephCluster
+metadata:
+  name: rook-ceph
+  namespace: rook-ceph
+spec:
+  cephVersion:
+    image: ceph/ceph:v14.2.4-20190917
+    allowUnsupported: false
+  dataDirHostPath: /var/lib/rook
+  mon:
+    count: 3
+    allowMultiplePerNode: false
+  dashboard:
+    enabled: true
+    ssl: false
+  network:
+    hostNetwork: true
+  rbdMirroring:
+    workers: 0
+  storage:
+    useAllNodes: false
+    nodes:
+    - name: "sunfire"
+      directories:
+      - path: "/mnt/ssd/ceph"
+      devices:
+      - name: "sdh"
+      - name: "sdd"
+      - name: "sdc"
+      - name: "sda"
+      - name: "sdf"
+      - name: "sdb"
+    - name: "xentor"
+      directories:
+      - path: "/ceph"
+      devices:
+      - name: "sdg"
+      - name: "sdf"
+    - name: "supermicro"
+      directories:
+      - path: "/ceph"
+      devices:
+      - name: "sda"
+      - name: "sdb"
+      - name: "sdc"

@@ -1,0 +1,134 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex-deployment
+  namespace: default
+  labels:
+    app: plex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plex
+  template:
+    metadata:
+      labels:
+        app: plex
+    spec:
+      hostNetwork: true
+      containers:
+      - name: plex
+        resources:
+          limits:
+            cpu: "8"
+          requests:
+            cpu: "4"
+        image: plexinc/pms-docker:public
+        ports:
+        - containerPort: 32400
+          name: web
+        - containerPort: 3005
+          name: web2
+        - containerPort: 8324
+          name: web3
+        - containerPort: 32410
+          name: web4
+        - containerPort: 32412
+          name: web5
+        - containerPort: 32413
+          name: web6
+        - containerPort: 32414
+          name: web7
+        env:
+        - name: PGID
+          value: "1000"
+        - name: PUID
+          value: "1000"
+        - name: TZ
+          value: "America/Toronto"
+        - name: PLEX_CLAIM
+          value: claim-TTmBfw9p7ubXGxqFCZke
+        - name: ADVERTISE_IP
+          value: plex.jamiechapmanbrn.com
+        volumeMounts:
+        - mountPath: /mnt
+          name: mnt
+        - mountPath: /etc/localtime
+          name: localtime
+        - mountPath: /config
+          name: config
+        - mountPath: /transcode
+          name: transcode
+        imagePullPolicy: Always
+      volumes:
+      - name: localtime
+        hostPath: 
+          path: /etc/localtime
+      - name: mnt
+        nfs: 
+          path: /mnt
+          server: xentor
+      - name: config
+        nfs:
+          path: /mnt/ssd/default-plex-config-pvc-aad547f4-f6ca-11e8-9125-00144fe7563a
+          server: sunfire
+        #persistentVolumeClaim:
+        #  claimName: plex-config
+      - name: transcode
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex
+  labels:
+    app: plex
+spec:
+  type: ClusterIP
+  ports:
+  - port: 32400
+    protocol: TCP
+    name: web
+  selector:
+    app: plex
+       
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: plex-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx-internal
+spec:
+  rules:
+  - host: plex.here
+    http:
+      paths:
+        - backend:
+            serviceName: plex
+            servicePort: 32400
+    
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: plex-ingress-jamiechapmanbrn
+  annotations:
+    kubernetes.io/ingress.class: nginx-prod
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod-jamiechapmanbrn
+    certmanager.k8s.io/acme-challenge-type: dns01
+    certmanager.k8s.io/acme-dns01-provider: cf-dns
+    kubernetes.io/tls-acme: “true”
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  rules:
+  - host: plex.jamiechapmanbrn.com
+    http:
+      paths:
+        - backend:
+            serviceName: plex
+            servicePort: 32400
+  tls:
+  - secretName: letsencrypt-sec-prod-plex-jamiechapmanbrn
+    hosts:
+    - "plex.jamiechapmanbrn.com"

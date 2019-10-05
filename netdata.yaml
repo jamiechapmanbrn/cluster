@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: netdata
+  labels:
+    app: netdata
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: netdata
+  template:
+    metadata:
+      labels:
+        app: netdata
+      annotations:
+        container.apparmor.security.beta.kubernetes.io/netdata: unconfined
+    spec:
+      #expose the application from every node
+      hostNetwork: true
+      containers:
+      - name: netdata
+        image: netdata/netdata
+        securityContext:
+            capabilities:
+                add: ["SYS_PTRACE"]
+        ports:
+        - containerPort: 19999
+        volumeMounts:
+        - mountPath: /host/proc
+          name: proc
+        - mountPath: /host/sys
+          name: sys
+        - mountPath: /var/run/docker.sock
+          name: docker
+      volumes:
+      - name: proc
+        hostPath: 
+          path: /proc
+      - name: sys
+        hostPath: 
+          path: /host/proc 
+      - name: docker
+        hostPath: 
+          path: /var/run/docker.soc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: netdata
+  labels:
+    app: netdata
+spec:
+  type: ClusterIP
+  ports:
+  - port: 19999
+    protocol: TCP
+  selector:
+    app: netdata
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: netdata-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx-internal
+spec:
+  rules:
+  - host: netdata.here
+    http:
+      paths:
+        - backend:
+            serviceName: netdata
+            servicePort: 19999
+    
+    
