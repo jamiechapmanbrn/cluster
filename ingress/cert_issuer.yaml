@@ -29,14 +29,12 @@ spec:
     # Name of a secret used to store the ACME account private key
     privateKeySecretRef:
       name: letsencrypt-sec-prod
-    dns01:
-      providers:
-        - name: cf-dns
-          cloudflare:
-            email: jamiechapmanbrn@hotmail.com  
-            # A secretKeyRef to a cloudflare api key
-            apiKeySecretRef:
-              name: cloudflare-apikey
-              key: apikey
-    # Enable HTTP01 validations
-    http01: {}
+    solvers:
+    - selector: {}
+      dns01:
+        cloudflare:
+          email: jamiechapmanbrn@hotmail.com  
+          # A secretKeyRef to a cloudflare api key
+          apiKeySecretRef:
+            name: cloudflare-apikey
+            key: apikey
