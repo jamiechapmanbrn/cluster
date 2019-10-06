@@ -13,9 +13,11 @@ data:
     set_authorization_header =  false
     pass_authorization_header = false
     provider = "google"
-    email_domains = ["*"]
     whitelist_domains = [".jamiechapmanbrn.com"]
     redirect_url = "https://oauth2.jamiechapmanbrn.com/oauth2/callback"
+    
+  auth_emails.txt: |
+    jamiechapmanbrn@gmail.com
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -85,6 +87,7 @@ spec:
         - "--http-address=0.0.0.0:4180"
         - "--upstream=file:///dev/null"
         - "--config=/etc/oauth2_proxy/oauth2_proxy.cfg"
+        - "--authenticated-emails-file=/etc/oauth2_proxy/auth_emails.txt"
         env:
         - name: OAUTH2_PROXY_CLIENT_ID
           valueFrom:
