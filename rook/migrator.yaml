@@ -10,9 +10,9 @@ spec:
       - image: eeacms/rsync
         command:
           - rsync
-          - -avxHAX 
+          - -Ravx
           - --progress
-          - /old/
+          - /old
           - /new/
         imagePullPolicy: IfNotPresent
         volumeMounts:
