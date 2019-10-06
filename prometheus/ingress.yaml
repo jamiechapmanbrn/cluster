@@ -7,7 +7,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx-prod
     nginx.ingress.kubernetes.io/auth-url: "https://oauth2.jamiechapmanbrn.com/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://oauth2.jamiechapmanbrn.com/oauth2/start?rd=grafana.jamiechapmanbrn.com"
+    nginx.ingress.kubernetes.io/auth-signin: "https://oauth2.jamiechapmanbrn.com/oauth2/start?rd=https://grafana.jamiechapmanbrn.com"
     certmanager.k8s.io/cluster-issuer: letsencrypt-prod
     kubernetes.io/tls-acme: “true”
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
@@ -32,7 +32,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx-prod
     nginx.ingress.kubernetes.io/auth-url: "https://oauth2.jamiechapmanbrn.com/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://oauth2.jamiechapmanbrn.com/oauth2/start?rd=prometheus.jamiechapmanbrn.com"
+    nginx.ingress.kubernetes.io/auth-signin: "https://oauth2.jamiechapmanbrn.com/oauth2/start?rd=https://prometheus.jamiechapmanbrn.com"
     certmanager.k8s.io/cluster-issuer: letsencrypt-prod
     kubernetes.io/tls-acme: “true”
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
@@ -57,7 +57,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx-prod
     nginx.ingress.kubernetes.io/auth-url: "https://oauth2.jamiechapmanbrn.com/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://oauth2.jamiechapmanbrn.com/oauth2/start?rd=alertmanager.jamiechapmanbrn.com"
+    nginx.ingress.kubernetes.io/auth-signin: "https://oauth2.jamiechapmanbrn.com/oauth2/start?rd=https://alertmanager.jamiechapmanbrn.com"
     certmanager.k8s.io/cluster-issuer: letsencrypt-prod
     kubernetes.io/tls-acme: “true”
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
