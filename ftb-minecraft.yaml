@@ -26,6 +26,7 @@ spec:
       labels:
         app: washing-wasp-minecraft
     spec:
+      hostNetwork: True
       containers:
       - env:
         - name: EULA
