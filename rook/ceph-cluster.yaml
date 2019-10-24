@@ -20,6 +20,22 @@ spec:
   mon:
     count: 3
     allowMultiplePerNode: false
+  resources:
+    osd:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 3Gi
+  mgr:
+    modules:
+    - name: pg_autoscaler
+      enabled: false
+    - name: diskprediction_local
+      enabled: true
+    - name: iostat
+      enabled: true
   dashboard:
     enabled: true
     ssl: false
@@ -30,16 +46,6 @@ spec:
   storage:
     useAllNodes: false
     nodes:
-    - name: "sunfire"
-      directories:
-      - path: "/mnt/ssd/ceph"
-      devices:
-      - name: "sdh"
-      - name: "sdd"
-      - name: "sdc"
-      - name: "sda"
-      - name: "sdf"
-      - name: "sdb"
     - name: "xentor"
       directories:
       - path: "/ceph"
@@ -52,4 +58,23 @@ spec:
       devices:
       - name: "sda"
       - name: "sdb"
+      - name: "sdc"
+    - name: "sunfire"
+      directories:
+      - path: "/ceph"
+      devices:
+      - name: "sdb"
+      - name: "sdh"
+      - name: "sdd"
+      - name: "sdc"
+      - name: "sdf"
+      - name: "sda"
+      config:
+        metadatadevice: "sde"
+    - name: "box"
+      directories:
+      - path: "/ceph"
+      devices:
+      - name: "sda"
+      - name: "sdd"
       - name: "sdc"

@@ -1,16 +1,18 @@
 apiVersion: ceph.rook.io/v1
 kind: CephFilesystem
 metadata:
-  name: myfs-ec
+  name: myfs-ec8
   namespace: rook-ceph
 spec:
   metadataPool:
     replicated:
-      size: 3
+      size: 2
+    deviceClass: hdd
   dataPools:
     - erasureCoded:
         dataChunks: 2
         codingChunks: 1
+      deviceClass: hdd
   metadataServer:
     activeCount: 1
     activeStandby: true
@@ -18,26 +20,13 @@ spec:
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: rook-cephfs
-# Change "rook-ceph" provisioner prefix to match the operator namespace if needed
+  name: fs
 provisioner: rook-ceph.cephfs.csi.ceph.com
 parameters:
-  # clusterID is the namespace where operator is deployed.
   clusterID: rook-ceph
-
-  # CephFS filesystem name into which the volume shall be created
-  fsName: myfs-ec
-
-  # Ceph pool into which the volume shall be created
-  # Required for provisionVolume: "true"
-  pool: myfs-ec-data0
-
-  # Root path of an existing CephFS volume
-  # Required for provisionVolume: "false"
-  # rootPath: /absolute/path
-
-  # The secrets contain Ceph admin credentials. These are generated automatically by the operator
-  # in the same namespace as the cluster.
+  fsName: myfs-ec8
+  pool: myfs-ec8-data0
+  mounter: kernel
   csi.storage.k8s.io/provisioner-secret-name: rook-ceph-csi
   csi.storage.k8s.io/provisioner-secret-namespace: rook-ceph
   csi.storage.k8s.io/node-stage-secret-name: rook-ceph-csi

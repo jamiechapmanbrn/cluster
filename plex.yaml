@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: plex-deployment
+  name: plex
   namespace: default
   labels:
     app: plex
@@ -10,6 +10,8 @@ spec:
   selector:
     matchLabels:
       app: plex
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -47,12 +49,15 @@ spec:
         - name: TZ
           value: "America/Toronto"
         - name: PLEX_CLAIM
-          value: claim-TTmBfw9p7ubXGxqFCZke
+          valueFrom:
+            secretKeyRef:
+              name: plex-claim
+              key: claim
         - name: ADVERTISE_IP
           value: plex.jamiechapmanbrn.com
         volumeMounts:
         - mountPath: /mnt
-          name: mnt
+          name: datadir
         - mountPath: /etc/localtime
           name: localtime
         - mountPath: /config
@@ -64,16 +69,12 @@ spec:
       - name: localtime
         hostPath: 
           path: /etc/localtime
-      - name: mnt
-        nfs: 
-          path: /mnt
-          server: xentor
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: cephfs-pvc
       - name: config
-        nfs:
-          path: /mnt/ssd/default-plex-config-pvc-aad547f4-f6ca-11e8-9125-00144fe7563a
-          server: sunfire
-        #persistentVolumeClaim:
-        #  claimName: plex-config
+        persistentVolumeClaim:
+          claimName: plex-config
       - name: transcode
         emptyDir: {}
 ---
@@ -91,23 +92,6 @@ spec:
     name: web
   selector:
     app: plex
-       
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: plex-ingress
-  annotations:
-    kubernetes.io/ingress.class: nginx-internal
-spec:
-  rules:
-  - host: plex.here
-    http:
-      paths:
-        - backend:
-            serviceName: plex
-            servicePort: 32400
-    
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -127,6 +111,6 @@ spec:
             serviceName: plex
             servicePort: 32400
   tls:
-  - secretName: letsencrypt-sec-prod-plex-jamiechapmanbrn
+  - secretName: plex.jamiechapmanbrn.com.tls
     hosts:
     - "plex.jamiechapmanbrn.com"

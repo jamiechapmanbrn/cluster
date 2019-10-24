@@ -11,3 +11,14 @@ parameters:
   fstype: xfs
 # Optional, default reclaimPolicy is "Delete". Other options are: "Retain", "Recycle" as documented in https://kubernetes.io/docs/concepts/storage/storage-classes/
 reclaimPolicy: Retain
+---
+apiVersion: ceph.rook.io/v1
+kind: CephBlockPool
+metadata:
+  name: ssd
+  namespace: rook-ceph
+spec:
+  failureDomain: host
+  replicated:
+    size: 2
+  deviceClass: ssd

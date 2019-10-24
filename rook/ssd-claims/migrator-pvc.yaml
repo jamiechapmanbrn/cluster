@@ -1,7 +1,8 @@
+
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: final-migrator
+  name: deluge2-migrator
 spec:
   template:
     spec:
@@ -19,15 +20,15 @@ spec:
           - mountPath: /new
             name: datadir
           - mountPath: /old
-            name: mnt
+            name: storage
         name: rsync
       volumes:
       - name: datadir
         persistentVolumeClaim:
-          claimName: cephfs-pvc
-      - name: mnt
+          claimName: deluge2-config
+      - name: storage
         nfs: 
-          path: /mnt
-          server: xentor
+          path: /pvcs/default-deluge2-config-pvc-265a09e7-115d-11e9-815f-00144fe7563a
+          server: sunfire
       restartPolicy: Never
   backoffLimit: 4
