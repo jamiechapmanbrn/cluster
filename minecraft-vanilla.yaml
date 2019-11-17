@@ -14,17 +14,12 @@ spec:
     matchLabels:
       app: minecraft-vanilla
   strategy:
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
-    type: RollingUpdate
+    type: Recreate
   template:
     metadata:
       labels:
         app: minecraft-vanilla
     spec:
-      nodeName: supermicro
-      hostNetwork: True
       containers:
       - env:
         - name: EULA

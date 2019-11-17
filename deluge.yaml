@@ -39,9 +39,8 @@ spec:
           name: config
       volumes:
       - name: mnt
-        nfs: 
-          path: /mnt
-          server: xentor
+        persistentVolumeClaim:
+          claimName: cephfs-pvc
       - name: config
         persistentVolumeClaim:
           claimName: deluge-config
