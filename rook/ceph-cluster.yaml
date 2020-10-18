@@ -23,11 +23,11 @@ spec:
   resources:
     osd:
       requests:
-        cpu: 500m
-        memory: 1Gi
+        cpu: 250m
+        memory: 250Mi
       limits:
         cpu: 1000m
-        memory: 3Gi
+        memory: 2Gi
   mgr:
     modules:
     - name: pg_autoscaler
@@ -47,34 +47,19 @@ spec:
     useAllNodes: false
     nodes:
     - name: "xentor"
-      directories:
-      - path: "/ceph"
       devices:
       - name: "sdg"
       - name: "sdf"
+      - name: "nvme0n1"
     - name: "supermicro"
-      directories:
-      - path: "/ceph"
       devices:
       - name: "sda"
       - name: "sdb"
       - name: "sdc"
-    - name: "sunfire"
-      directories:
-      - path: "/ceph"
-      devices:
-      - name: "sdb"
-      - name: "sdh"
-      - name: "sdd"
-      - name: "sdc"
-      - name: "sdf"
-      - name: "sda"
-      config:
-        metadatadevice: "sde"
+      - name: nvme0n1
     - name: "box"
-      directories:
-      - path: "/ceph"
       devices:
       - name: "sda"
       - name: "sdd"
       - name: "sdc"
+      - name: nvme0n1p1

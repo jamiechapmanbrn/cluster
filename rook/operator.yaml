@@ -157,8 +157,8 @@ spec:
           value: "true"
         - name: ROOK_CSI_ENABLE_GRPC_METRICS
           value: "true"
-        - name: ROOK_CSI_KUBELET_DIR_PATH
-          value: "/var/lib/rancher/k3s/agent/kubelet"
+        # - name: ROOK_CSI_KUBELET_DIR_PATH
+        #  value: "/var/lib/rancher/k3s/agent/kubelet"
         # The default version of CSI supported by Rook will be started. To change the version
         # of the CSI driver to something other than what is officially supported, change
         # these images to the desired release of the CSI driver.

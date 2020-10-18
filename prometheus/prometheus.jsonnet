@@ -4,7 +4,12 @@ local kp = (import 'kube-prometheus/kube-prometheus.libsonnet') + {
       prometheus+:: {
         namespaces+: ['default', 'rook-ceph', 'ingress-nginx', 'cert-manager', 'metallb-system'],
       }
+      kubeControllerManager:
+        enabled: false
+      kubeScheduller:
+        enabled: false
     },
+    
 };
 
 { ['00namespace-' + name]: kp.kubePrometheus[name] for name in std.objectFields(kp.kubePrometheus) } +

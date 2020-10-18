@@ -17,14 +17,24 @@ spec:
       labels:
         app: plex
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: k3s.io/hostname
+                operator: In
+                values:
+                - box        
       hostNetwork: true
       containers:
       - name: plex
         resources:
           limits:
-            cpu: "8"
-          requests:
             cpu: "4"
+          requests:
+            cpu: "1"
         image: plexinc/pms-docker:public
         ports:
         - containerPort: 32400
@@ -48,11 +58,6 @@ spec:
           value: "1000"
         - name: TZ
           value: "America/Toronto"
-        - name: PLEX_CLAIM
-          valueFrom:
-            secretKeyRef:
-              name: plex-claim
-              key: claim
         - name: ADVERTISE_IP
           value: plex.jamiechapmanbrn.com
         volumeMounts:
@@ -85,7 +90,7 @@ metadata:
   labels:
     app: plex
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
   - port: 32400
     protocol: TCP

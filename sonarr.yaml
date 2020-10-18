@@ -20,7 +20,7 @@ spec:
       - name: sonarr
         resources:
           limits:
-            cpu: "1"
+            cpu: "100m"
         image: linuxserver/sonarr
         ports:
         - containerPort: 8989

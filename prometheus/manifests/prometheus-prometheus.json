@@ -22,7 +22,7 @@
       "nodeSelector": {
          "beta.kubernetes.io/os": "linux"
       },
-      "replicas": 2,
+      "replicas": 1,
       "resources": {
          "requests": {
             "memory": "400Mi"
